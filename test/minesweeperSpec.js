@@ -65,53 +65,57 @@ var BoardFactory = {
  */
 
 describe('Minesweeper', function() {
-  describe('cells', function () {
-    it('should have sensible defaults', function () {
-      var cell = new Cell();
-      expect(cell.x).to.equal(0);
-      expect(cell.y).to.equal(0);
-      expect(cell.state).to.equal(CellStateEnum.CLOSED);
-      expect(cell.flag).to.equal(CellFlagEnum.NONE);
-      expect(cell.isMine).to.be.false;
-      expect(cell.numAdjacentMines).to.equal(0);
-    });
+  describe('cell', function () {
+    describe('constructor', function () {
+      it('should have sensible defaults', function () {
+        var cell = new Cell();
+        expect(cell.x).to.equal(0);
+        expect(cell.y).to.equal(0);
+        expect(cell.state).to.equal(CellStateEnum.CLOSED);
+        expect(cell.flag).to.equal(CellFlagEnum.NONE);
+        expect(cell.isMine).to.be.false;
+        expect(cell.numAdjacentMines).to.equal(0);
+      });
 
-    it('should let you specify the x,y coords', function () {
-      var X = 3,
-          Y = 4;
+      it('should let you specify the x,y coords', function () {
+        var X = 3,
+            Y = 4;
 
-      var cell = CellFactory.create({ x: X, y: Y });
-      expect(cell.x).to.equal(X);
-      expect(cell.y).to.equal(Y);      
-    });
+        var cell = CellFactory.create({ x: X, y: Y });
+        expect(cell.x).to.equal(X);
+        expect(cell.y).to.equal(Y);      
+      });
 
-    it('should let you specify whether the cell is a mine', function () {
-      var cell = CellFactory.create({ isMine: false });
-      var mineCell = CellFactory.create({ isMine: true });
-      expect(cell.isMine).to.be.false;
-      expect(mineCell.isMine).to.be.true;
-    });
+      it('should let you specify whether the cell is a mine', function () {
+        var cell = CellFactory.create({ isMine: false });
+        var mineCell = CellFactory.create({ isMine: true });
+        expect(cell.isMine).to.be.false;
+        expect(mineCell.isMine).to.be.true;
+      });
 
-    it('should let you specify the number of adjacent cells that are mines', function () {
-      var cell = CellFactory.create({ numAdjacentMines: 4 });
-      expect(cell.numAdjacentMines).to.equal(4);
+      it('should let you specify the number of adjacent cells that are mines', function () {
+        var cell = CellFactory.create({ numAdjacentMines: 4 });
+        expect(cell.numAdjacentMines).to.equal(4);
+      });
     });
   });
 
-  describe('boards', function () {
-    it('should require a mine array to be created', function () {
-      var fn = function () { return new Board(); }; 
-      expect(fn).to.throw(Error);
-    });
+  describe('board', function () {
+    describe('constructor', function () {
+      it('should require a mine array to be created', function () {
+        var fn = function () { return new Board(); }; 
+        expect(fn).to.throw(Error);
+      });
 
-    it('should require a two dimensional mine array that\'s at least 1x1', function () {
-      var fn1 = function () { return new Board([]); };
-      var fn2 = function () { return new Board([[]]); };
-      var fn3 = function () { return new Board([[0]]); };
+      it('should require a two dimensional mine array that\'s at least 1x1', function () {
+        var fn1 = function () { return new Board([]); };
+        var fn2 = function () { return new Board([[]]); };
+        var fn3 = function () { return new Board([[0]]); };
 
-      expect(fn1).to.throw(Error);
-      expect(fn2).to.throw(Error);
-      expect(fn3).to.not.throw(Error);
+        expect(fn1).to.throw(Error);
+        expect(fn2).to.throw(Error);
+        expect(fn3).to.not.throw(Error);
+      });
     });
 
     describe('after initilising with a valid mine array', function () {
