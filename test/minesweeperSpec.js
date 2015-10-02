@@ -50,9 +50,7 @@ var BoardFactory = {
   create: function (overwrites) {
     var defaults = {
       mineArray: [
-        [ 0 , 1 , 0 ],
-        [ 0 , 0 , 1 ],
-        [ 0 , 0 , 0 ]
+        [ 0 , 1 ]
       ]
     };
     var values = Object.extend(defaults, overwrites);
@@ -123,7 +121,7 @@ describe('Minesweeper', function() {
 
       beforeEach(function () {
         mineArray = [
-          [ 0 , 1 , 0 ],
+          [ 1 , 1 , 0 ],
           [ 0 , 0 , 1 ],
           [ 0 , 0 , 0 ],
           [ 0 , 0 , 0 ]
@@ -132,12 +130,12 @@ describe('Minesweeper', function() {
         board = new BoardFactory.create({ mineArray: mineArray });
 
         correctGrid = [[
-            CellFactory.create({ x: 0, y: 0, numAdjacentMines: 1 }),
-            CellFactory.create({ x: 1, y: 0, numAdjacentMines: 1, isMine: true }),
+            CellFactory.create({ x: 0, y: 0, numAdjacentMines: 1, isMine: true }),
+            CellFactory.create({ x: 1, y: 0, numAdjacentMines: 2, isMine: true }),
             CellFactory.create({ x: 2, y: 0, numAdjacentMines: 2 })
           ],[
-            CellFactory.create({ x: 0, y: 1, numAdjacentMines: 1 }),
-            CellFactory.create({ x: 1, y: 1, numAdjacentMines: 2 }),
+            CellFactory.create({ x: 0, y: 1, numAdjacentMines: 2 }),
+            CellFactory.create({ x: 1, y: 1, numAdjacentMines: 3 }),
             CellFactory.create({ x: 2, y: 1, numAdjacentMines: 1, isMine: true })
           ],[
             CellFactory.create({ x: 0, y: 2, numAdjacentMines: 0 }),
@@ -164,12 +162,236 @@ describe('Minesweeper', function() {
       });
 
       it('should have the correct mine count', function () {
-        expect(board.numMines()).to.equal(2);
+        expect(board.numMines()).to.equal(3);
       });
 
       it('should have a grid with correct values for all cells', function () {
         var grid = board.grid();
         expect(board.grid()).to.deep.equal(correctGrid);
+      });
+    });
+
+    describe('after flagging a cell', function () {
+      var mineArray, board;
+
+      beforeEach(function () {
+        mineArray = [[ 0 , 1 ]];
+        board = BoardFactory.create({ mineArray: mineArray });
+      });
+
+      it('should update that cell flag to EXCLAMATION from NONE for closed cells', function () {
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.NONE);
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.EXCLAMATION);
+      });
+
+      it('should update that cell flag to QUESTION from EXCLAMATION for closed cells', function () {
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.EXCLAMATION);
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.QUESTION);
+      });
+
+      it('should update that cell flag to NONE from QUESTION for closed cells', function () {
+        board.cycleCellFlag(0,0);
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.QUESTION);
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.NONE);
+      });
+
+      it('should not update the cell flag for open cells', function () {
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.NONE);
+        board.openCell(0,0);
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.NONE);
+      });
+
+      it('should not update the cell flag if the board state is already WON', function () {
+        board.openCell(0,0);
+        board.cycleCellFlag(1,0);
+        expect(board.cell(1,0).flag).to.equal(CellFlagEnum.EXCLAMATION);
+        expect(board.state()).to.equal(BoardStateEnum.WON);
+        board.cycleCellFlag(1,0);
+        expect(board.cell(1,0).flag).to.equal(CellFlagEnum.EXCLAMATION);
+      });
+
+      it('should not update the cell flag if the board state is already LOST', function () {
+        board.cycleCellFlag(0,0);
+        board.openCell(1,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.EXCLAMATION);
+        expect(board.state()).to.equal(BoardStateEnum.LOST);
+        board.cycleCellFlag(0,0);
+        expect(board.cell(0,0).flag).to.equal(CellFlagEnum.EXCLAMATION);
+      });
+    });
+
+    describe('after opening a cell', function () {
+      var mineArray,
+          numRows,
+          numCols,
+          board,
+          o,
+          c;
+
+      beforeEach(function () {
+        o = CellStateEnum.OPEN;
+        c = CellStateEnum.CLOSED;
+
+        mineArray = [
+          [ 0 , 0 , 1 ],
+          [ 0 , 0 , 0 ],
+          [ 0 , 0 , 0 ],
+          [ 0 , 1 , 0 ]
+        ];
+
+        numRows = 4;
+        numCols = 3;
+
+        board = BoardFactory.create({ mineArray: mineArray });
+      });
+
+      it('should change the cell state to OPEN for CLOSED cells', function () {
+        expect(board.cell(1,1).state).to.equal(CellStateEnum.CLOSED);
+        board.openCell(1,1);
+        expect(board.cell(1,1).state).to.equal(CellStateEnum.OPEN);
+      });
+
+      it('should not change the cell state for flagged cells', function () {
+        expect(board.cell(1,1).state).to.equal(CellStateEnum.CLOSED);
+        board.cycleCellFlag(1,1);
+        board.openCell(1,1);
+        expect(board.cell(1,1).state).to.equal(CellStateEnum.CLOSED);
+        board.cycleCellFlag(1,1);
+        board.openCell(1,1);
+        expect(board.cell(1,1).state).to.equal(CellStateEnum.CLOSED);
+      });
+
+      it('should not change the cell state if the board state is LOST', function () {
+        board = BoardFactory.create();
+        board.openCell(1,0);
+        expect(board.state()).to.equal(BoardStateEnum.LOST);
+        expect(board.cell(0,0).state).to.equal(CellStateEnum.CLOSED);
+      });
+
+      it('should use the four-way flood-fill algorithm to "open up" the board (no flags)', function () {
+        var openArray = [
+          [ o , o , c ],
+          [ o , o , o ],
+          [ o , o , c ],
+          [ c , c , c ]
+        ];
+
+        board.openCell(1,1);
+
+        expect(board.cell(0,0).state).to.equal(openArray[0][0]);
+        expect(board.cell(1,0).state).to.equal(openArray[0][1]);
+        expect(board.cell(2,0).state).to.equal(openArray[0][2]);
+        expect(board.cell(0,1).state).to.equal(openArray[1][0]);
+        expect(board.cell(1,1).state).to.equal(openArray[1][1]);
+        expect(board.cell(2,1).state).to.equal(openArray[1][2]);
+        expect(board.cell(0,2).state).to.equal(openArray[2][0]);
+        expect(board.cell(1,2).state).to.equal(openArray[2][1]);
+        expect(board.cell(2,2).state).to.equal(openArray[2][2]);
+        expect(board.cell(0,3).state).to.equal(openArray[3][0]);
+        expect(board.cell(1,3).state).to.equal(openArray[3][1]);
+        expect(board.cell(2,3).state).to.equal(openArray[3][2]);
+      });
+
+      it('should use the four-way flood-fill algorithm to "open up" the board (with EXCLAMATION flag)', function () {
+        var openArray = [
+          [ c , o , c ],
+          [ c , o , o ],
+          [ c , o , c ],
+          [ c , c , c ]
+        ];
+
+        board.cycleCellFlag(0,1);
+        board.openCell(1,1);
+
+        expect(board.cell(0,0).state).to.equal(openArray[0][0]);
+        expect(board.cell(1,0).state).to.equal(openArray[0][1]);
+        expect(board.cell(2,0).state).to.equal(openArray[0][2]);
+        expect(board.cell(0,1).state).to.equal(openArray[1][0]);
+        expect(board.cell(1,1).state).to.equal(openArray[1][1]);
+        expect(board.cell(2,1).state).to.equal(openArray[1][2]);
+        expect(board.cell(0,2).state).to.equal(openArray[2][0]);
+        expect(board.cell(1,2).state).to.equal(openArray[2][1]);
+        expect(board.cell(2,2).state).to.equal(openArray[2][2]);
+        expect(board.cell(0,3).state).to.equal(openArray[3][0]);
+        expect(board.cell(1,3).state).to.equal(openArray[3][1]);
+        expect(board.cell(2,3).state).to.equal(openArray[3][2]);
+      });
+
+      it('should use the four-way flood-fill algorithm to "open up" the board (with QUESTION flag)', function () {
+        var openArray = [
+          [ c , o , c ],
+          [ c , o , o ],
+          [ c , o , c ],
+          [ c , c , c ]
+        ];
+
+        board.cycleCellFlag(0,1);
+        board.cycleCellFlag(0,1);
+        board.openCell(1,1);
+
+        expect(board.cell(0,0).state).to.equal(openArray[0][0]);
+        expect(board.cell(1,0).state).to.equal(openArray[0][1]);
+        expect(board.cell(2,0).state).to.equal(openArray[0][2]);
+        expect(board.cell(0,1).state).to.equal(openArray[1][0]);
+        expect(board.cell(1,1).state).to.equal(openArray[1][1]);
+        expect(board.cell(2,1).state).to.equal(openArray[1][2]);
+        expect(board.cell(0,2).state).to.equal(openArray[2][0]);
+        expect(board.cell(1,2).state).to.equal(openArray[2][1]);
+        expect(board.cell(2,2).state).to.equal(openArray[2][2]);
+        expect(board.cell(0,3).state).to.equal(openArray[3][0]);
+        expect(board.cell(1,3).state).to.equal(openArray[3][1]);
+        expect(board.cell(2,3).state).to.equal(openArray[3][2]);
+      });
+    });
+
+    describe('state', function () {
+      var board;
+
+      beforeEach(function () {
+        board = BoardFactory.create();
+      });
+
+      it('should be PRISTINE immediately following initilisation', function () {  
+        expect(board.state()).to.equal(BoardStateEnum.PRISTINE);
+      });
+
+      it('should change from PRISTINE to IN_PROGRESS after first flag placed', function () {
+        expect(board.state()).to.equal(BoardStateEnum.PRISTINE);
+        board.cycleCellFlag(0,0);
+        expect(board.state()).to.equal(BoardStateEnum.IN_PROGRESS);
+      });
+
+      it('should change from PRISTINE to IN_PROGRESS after first cell opening', function () {
+        expect(board.state()).to.equal(BoardStateEnum.PRISTINE);
+        board.openCell(0,0);
+        expect(board.state()).to.equal(BoardStateEnum.IN_PROGRESS);
+      });
+
+      it('should change from IN_PROGRESS to WON if the cell flag causes the board' +
+         ' to enter a winning state', function () {
+        board.openCell(0,0);
+        expect(board.state()).to.equal(BoardStateEnum.IN_PROGRESS);
+        board.cycleCellFlag(1,0);
+        expect(board.state()).to.equal(BoardStateEnum.WON);
+      });
+
+      it('should change from IN_PROGRESS to WON if opening the cell causes the board' +
+         ' to enter a winning state', function () {
+        board.cycleCellFlag(1,0);
+        expect(board.state()).to.equal(BoardStateEnum.IN_PROGRESS);
+        board.openCell(0,0);
+        expect(board.state()).to.equal(BoardStateEnum.WON);
+      });
+
+      it('should change from IN_PROGRESS to LOST if a mine cell is opened', function () {
+        board.openCell(1,0);
+        expect(board.state()).to.equal(BoardStateEnum.LOST);
       });
     });
   });

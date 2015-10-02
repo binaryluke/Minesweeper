@@ -26,7 +26,7 @@
 
   var BoardStateEnum = {
     PRISTINE: 0,
-    DIRTY: 1,
+    IN_PROGRESS: 1,
     LOST: 2,
     WON: 3
   };
@@ -88,6 +88,109 @@
     return this._grid;
   };
 
+  Board.prototype.cell = function (x, y) {
+    if (x >= 0 && y >= 0 && y < this._numRows && x < this._numCols) {
+      return this._grid[y][x];
+    }
+  };
+
+  Board.prototype.cycleCellFlag = function (x, y) {
+    var cell = this.cell(x, y), updated = true;
+
+    if (!cell || cell.state === CellStateEnum.OPEN || 
+         this._state === BoardStateEnum.WON || this._state === BoardStateEnum.LOST) {
+      return;
+    }
+    
+    if (cell.flag === CellFlagEnum.NONE) {
+      cell.flag = CellFlagEnum.EXCLAMATION;
+    } else if (cell.flag === CellFlagEnum.EXCLAMATION) {
+      cell.flag = CellFlagEnum.QUESTION;
+    } else if (cell.flag === CellFlagEnum.QUESTION) {
+      cell.flag = CellFlagEnum.NONE;
+    } else {
+      updated = false;
+    }
+
+    // change board state to IN_PROGRESS if we were on a PRISTINE board
+    if (updated && this._state === BoardStateEnum.PRISTINE) {
+      this._state = BoardStateEnum.IN_PROGRESS;
+    }
+
+    // and check if we've entered a WIN / LOSE scenario
+    this._updateState();
+  };
+
+  Board.prototype.openCell = function (x, y) {
+    var cell = this.cell(x, y);
+
+    if (cell && cell.state === CellStateEnum.CLOSED && cell.flag === CellFlagEnum.NONE) {
+      cell.state = CellStateEnum.OPEN;
+
+      // flood-fill the board
+      if (!cell.isMine) {
+        this._fourWayFloodFill(x - 1, y);
+        this._fourWayFloodFill(x + 1, y);
+        this._fourWayFloodFill(x, y - 1);
+        this._fourWayFloodFill(x, y + 1);
+      }
+
+      // change board state to IN_PROGRESS if we were on a PRISTINE board
+      if (this._state === BoardStateEnum.PRISTINE) {
+        this._state = BoardStateEnum.IN_PROGRESS;
+      }
+
+      // and check if we've entered a WIN / LOSE scenario
+      this._updateState();
+    }
+  };
+
+  // open-up the board using four-way flood-fill algorithm
+  // https://en.wikipedia.org/wiki/Flood_fill
+  Board.prototype._fourWayFloodFill = function (x, y) {
+    var cell = this.cell(x, y);
+
+    if (cell && !cell.isMine && cell.state === CellStateEnum.CLOSED && cell.flag === CellFlagEnum.NONE) {
+      cell.state = CellStateEnum.OPEN;
+
+      if (cell.numAdjacentMines === 0) {
+        this._fourWayFloodFill(x - 1, y);
+        this._fourWayFloodFill(x + 1, y);
+        this._fourWayFloodFill(x, y - 1);
+        this._fourWayFloodFill(x, y + 1);
+      }
+    }
+  };
+
+  Board.prototype._updateState = function () {
+    var x, y, cell, isWin = true;
+
+    for (y = 0; y < this._numRows; y++) {
+      for (x = 0; x < this._numCols; x++) {
+        cell = this.cell(x,y);
+
+        if(cell.state === CellStateEnum.OPEN) {
+          if (cell.isMine) {
+            this._state = BoardStateEnum.LOST;
+            return;
+          }
+        } else if (cell.state === CellStateEnum.CLOSED) {
+          if (cell.isMine) {
+            if(cell.flag !== CellFlagEnum.EXCLAMATION) {
+              isWin = false;
+            }
+          } else {
+            isWin = false;
+          }
+        }
+      }
+    }
+
+    if (isWin) {
+      this._state = BoardStateEnum.WON;
+    }
+  };
+
   /**
    *  Helpers
    */
@@ -132,7 +235,7 @@
     var idxX,
         idxY,
         endX = x + 1,
-        endY = y + 2,
+        endY = y + 1,
         maxX = mineArray[0].length,
         maxY = mineArray.length,
         mineCount = 0;
