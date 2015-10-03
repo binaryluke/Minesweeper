@@ -13,6 +13,7 @@ var CellFlagEnum = minesweeper.CellFlagEnum;
 var BoardStateEnum = minesweeper.BoardStateEnum;
 var Cell = minesweeper.Cell;
 var Board = minesweeper.Board;
+var generateMineArray = minesweeper.generateMineArray;
 
 /**
  *  Object.extend polyfill
@@ -393,6 +394,33 @@ describe('Minesweeper', function() {
         board.openCell(1,0);
         expect(board.state()).to.equal(BoardStateEnum.LOST);
       });
+    });
+  });
+
+  describe('generating mine arrays', function () {
+    var board, mineArray, numRows, numCols, numMines;
+
+    beforeEach(function () {
+      numRows = 2;
+      numCols = 3;
+      numMines = 4;
+      
+      mineArray = generateMineArray({
+        rows: numRows,
+        cols: numCols,
+        mines: numMines
+      });
+
+      board = BoardFactory.create({ mineArray: mineArray });
+    });
+
+    it('should produce the correct number of rows and columns', function () {
+      expect(board.numRows()).to.equal(numRows);
+      expect(board.numCols()).to.equal(numCols);
+    });
+
+    it('should produce the correct number of mines', function () {
+      expect(board.numMines()).to.equal(numMines);
     });
   });
 });

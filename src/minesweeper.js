@@ -192,6 +192,33 @@
   };
 
   /**
+   *  generateMineArray
+   */
+
+  var generateMineArray = function (options) {
+    var i, j, length, rows, cols, mines, mineArray = [];
+
+    options = options || {};
+    rows = options.rows || 10;
+    cols = options.cols || options.rows || 10;
+    mines = options.mines || parseInt((rows * cols) * 0.15, 10) || 0;
+    length = rows * cols;
+
+    for (i = 0; i < length; i++) {
+      if (i < mines) {
+        mineArray.push(1);
+      } else {
+        mineArray.push(0);
+      }
+    }
+
+    mineArray = fisherYatesShuffle(mineArray);
+    mineArray = singleToMultiDimensionalArray(mineArray, cols);
+    
+    return mineArray;
+  };
+
+  /**
    *  Helpers
    */
 
@@ -284,6 +311,38 @@
     return isValid;
   };
 
+  // Credit:
+  // http://bost.ocks.org/mike/shuffle/
+  var fisherYatesShuffle = function (array) {
+    var m = array.length, t, i;
+
+    // While there remain elements to shuffle…
+    while (m) {
+
+      // Pick a remaining element…
+      i = Math.floor(Math.random() * m--);
+
+      // And swap it with the current element.
+      t = array[m];
+      array[m] = array[i];
+      array[i] = t;
+    }
+
+    return array;
+  };
+
+  var singleToMultiDimensionalArray = function (array, numCols) {
+    var i,
+        rows = array.length / numCols,
+        multi = [];
+
+    for (i = 0; i < rows; i++) {
+      multi.push(array.splice(0, numCols));
+    }
+
+    return multi;
+  };
+
   /**
    *  Object.extend polyfill
    */
@@ -300,11 +359,12 @@
    */
 
   var minesweeper = {
+    Cell: Cell,
     CellStateEnum: CellStateEnum,
     CellFlagEnum: CellFlagEnum,
+    Board: Board,
     BoardStateEnum: BoardStateEnum,
-    Cell: Cell,
-    Board: Board
+    generateMineArray: generateMineArray
   };
 
   /**
