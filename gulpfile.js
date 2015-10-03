@@ -1,6 +1,8 @@
 var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');
+var uglify = require('gulp-uglify');
+var rename = require('gulp-rename');
 var mocha = require('gulp-mocha');
 var gutil = require('gulp-util');
 
@@ -9,6 +11,20 @@ gulp.task('jshint', function () {
     .pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     .pipe(jshint.reporter('fail'));
+});
+
+gulp.task('build', function () {
+  return gulp.src(['src/**.js'])
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('compress', ['build'], function () {
+  return gulp.src(['dist/**.js', '!dist/**.min.js'])
+    .pipe(uglify({ preserveComments: 'license' }))
+    .pipe(rename({
+      extname: '.min.js'
+    }))
+    .pipe(gulp.dest('dist'));
 });
 
 gulp.task('mocha', function() {
@@ -21,4 +37,4 @@ gulp.task('watch', function() {
     gulp.watch(['src/**', 'test/**'], ['jshint', 'mocha']);
 });
 
-gulp.task('default', ['jshint', 'mocha']);
+gulp.task('default', ['jshint', 'mocha', 'build', 'compress']);
