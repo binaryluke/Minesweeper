@@ -1,3 +1,13 @@
+/*!
+ * Library for making Minesweeper clones
+ * https://github.com/binaryluke/Minesweeper
+ *
+ * Copyright 2015, Luke Howard (@binaryluke)
+ *
+ * Released under the MIT license
+ * http://lukehoward.name/project/minesweeper/license
+ */
+
 (function() {
   'use strict';
 
