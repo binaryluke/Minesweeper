@@ -1,0 +1,25 @@
+{
+  "name": "minesweeper",
+  "version": "1.0.0",
+  "homepage": "https://github.com/binaryluke/Minesweeper",
+  "authors": [
+    "Luke Howard <binaryluke@gmail.com>"
+  ],
+  "description": "Provides functionality that can be used to create a Minesweeper clone.",
+  "main": "dist/minesweeper.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src"
+    "test",
+    "gulpfile.js",
+    "package.json"
+  ]
+}
