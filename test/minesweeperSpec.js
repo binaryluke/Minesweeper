@@ -275,15 +275,15 @@ describe('Minesweeper', function() {
         expect(board.cell(0,0).state).to.equal(CellStateEnum.CLOSED);
       });
 
-      it('should use the four-way flood-fill algorithm to "open up" the board (no flags)', function () {
+      it('should use the eight-way flood-fill algorithm to "open up" the board (no flags)', function () {
         var openArray = [
           [ o , o , c ],
-          [ o , o , o ],
+          [ o , o , c ],
           [ o , o , c ],
           [ c , c , c ]
         ];
 
-        board.openCell(1,1);
+        board.openCell(0,1);
 
         expect(board.cell(0,0).state).to.equal(openArray[0][0]);
         expect(board.cell(1,0).state).to.equal(openArray[0][1]);
@@ -299,16 +299,16 @@ describe('Minesweeper', function() {
         expect(board.cell(2,3).state).to.equal(openArray[3][2]);
       });
 
-      it('should use the four-way flood-fill algorithm to "open up" the board (with EXCLAMATION flag)', function () {
+      it('should use the eight-way flood-fill algorithm to "open up" the board (with EXCLAMATION flag)', function () {
         var openArray = [
-          [ c , o , c ],
-          [ c , o , o ],
-          [ c , o , c ],
+          [ o , o , c ],
+          [ o , c , c ],
+          [ o , o , c ],
           [ c , c , c ]
         ];
 
-        board.cycleCellFlag(0,1);
-        board.openCell(1,1);
+        board.cycleCellFlag(1,1);
+        board.openCell(0,1);
 
         expect(board.cell(0,0).state).to.equal(openArray[0][0]);
         expect(board.cell(1,0).state).to.equal(openArray[0][1]);
@@ -324,17 +324,17 @@ describe('Minesweeper', function() {
         expect(board.cell(2,3).state).to.equal(openArray[3][2]);
       });
 
-      it('should use the four-way flood-fill algorithm to "open up" the board (with QUESTION flag)', function () {
+      it('should use the eight-way flood-fill algorithm to "open up" the board (with QUESTION flag)', function () {
         var openArray = [
-          [ c , o , c ],
-          [ c , o , o ],
-          [ c , o , c ],
+          [ o , o , c ],
+          [ o , c , c ],
+          [ o , o , c ],
           [ c , c , c ]
         ];
 
-        board.cycleCellFlag(0,1);
-        board.cycleCellFlag(0,1);
-        board.openCell(1,1);
+        board.cycleCellFlag(1,1);
+        board.cycleCellFlag(1,1);
+        board.openCell(0,1);
 
         expect(board.cell(0,0).state).to.equal(openArray[0][0]);
         expect(board.cell(1,0).state).to.equal(openArray[0][1]);

@@ -153,10 +153,14 @@
 
       // flood-fill the board
       if (!cell.isMine) {
-        this._fourWayFloodFill(x - 1, y);
-        this._fourWayFloodFill(x + 1, y);
-        this._fourWayFloodFill(x, y - 1);
-        this._fourWayFloodFill(x, y + 1);
+        this._floodFill(x + 1, y);
+        this._floodFill(x - 1, y);
+        this._floodFill(x, y + 1);
+        this._floodFill(x, y - 1);
+        this._floodFill(x + 1, y + 1);
+        this._floodFill(x - 1, y - 1);
+        this._floodFill(x - 1, y + 1);
+        this._floodFill(x + 1, y - 1);
       }
 
       // change board state to IN_PROGRESS if we were on a PRISTINE board
@@ -171,17 +175,21 @@
 
   // open-up the board using four-way flood-fill algorithm
   // https://en.wikipedia.org/wiki/Flood_fill
-  Board.prototype._fourWayFloodFill = function (x, y) {
+  Board.prototype._floodFill = function (x, y) {
     var cell = this._cell(x, y);
 
     if (cell && !cell.isMine && cell.state === CellStateEnum.CLOSED && cell.flag === CellFlagEnum.NONE) {
       cell.state = CellStateEnum.OPEN;
 
       if (cell.numAdjacentMines === 0) {
-        this._fourWayFloodFill(x - 1, y);
-        this._fourWayFloodFill(x + 1, y);
-        this._fourWayFloodFill(x, y - 1);
-        this._fourWayFloodFill(x, y + 1);
+        this._floodFill(x + 1, y);
+        this._floodFill(x - 1, y);
+        this._floodFill(x, y + 1);
+        this._floodFill(x, y - 1);
+        this._floodFill(x + 1, y + 1);
+        this._floodFill(x - 1, y - 1);
+        this._floodFill(x - 1, y + 1);
+        this._floodFill(x + 1, y - 1);
       }
     }
   };
