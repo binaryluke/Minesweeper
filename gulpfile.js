@@ -34,7 +34,7 @@ gulp.task('mocha', function() {
 });
 
 gulp.task('watch', function() {
-    gulp.watch(['src/**', 'test/**'], ['jshint', 'mocha']);
+    gulp.watch(['src/**', 'test/**'], ['default']);
 });
 
 gulp.task('default', ['jshint', 'mocha', 'build', 'compress']);

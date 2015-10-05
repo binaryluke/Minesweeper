@@ -115,11 +115,11 @@
   };
 
   Board.prototype.cell = function (x, y) {
-    return extend({}, this._cell(x, y));
+    return extend({}, this._cell(+x, +y));
   };
 
   Board.prototype.cycleCellFlag = function (x, y) {
-    var cell = this._cell(x, y), updated = true;
+    var cell = this._cell(+x, +y), updated = true;
 
     if (!cell || cell.state === CellStateEnum.OPEN || 
          this._state === BoardStateEnum.WON || this._state === BoardStateEnum.LOST) {
@@ -148,29 +148,32 @@
   Board.prototype.openCell = function (x, y) {
     var cell = this._cell(x, y);
 
-    if (cell && cell.state === CellStateEnum.CLOSED && cell.flag === CellFlagEnum.NONE) {
-      cell.state = CellStateEnum.OPEN;
-
-      // flood-fill the board
-      if (!cell.isMine) {
-        this._floodFill(x + 1, y);
-        this._floodFill(x - 1, y);
-        this._floodFill(x, y + 1);
-        this._floodFill(x, y - 1);
-        this._floodFill(x + 1, y + 1);
-        this._floodFill(x - 1, y - 1);
-        this._floodFill(x - 1, y + 1);
-        this._floodFill(x + 1, y - 1);
-      }
-
-      // change board state to IN_PROGRESS if we were on a PRISTINE board
-      if (this._state === BoardStateEnum.PRISTINE) {
-        this._state = BoardStateEnum.IN_PROGRESS;
-      }
-
-      // and check if we've entered a WIN / LOSE scenario
-      this._updateState();
+    if (!cell || cell.state === CellStateEnum.OPEN || cell.flag !== CellFlagEnum.NONE ||
+         this._state === BoardStateEnum.WON || this._state === BoardStateEnum.LOST) {
+      return;
     }
+
+    cell.state = CellStateEnum.OPEN;
+
+    // flood-fill the board
+    if (!cell.isMine) {
+      this._floodFill(x + 1, y);
+      this._floodFill(x - 1, y);
+      this._floodFill(x, y + 1);
+      this._floodFill(x, y - 1);
+      this._floodFill(x + 1, y + 1);
+      this._floodFill(x - 1, y - 1);
+      this._floodFill(x - 1, y + 1);
+      this._floodFill(x + 1, y - 1);
+    }
+
+    // change board state to IN_PROGRESS if we were on a PRISTINE board
+    if (this._state === BoardStateEnum.PRISTINE) {
+      this._state = BoardStateEnum.IN_PROGRESS;
+    }
+
+    // and check if we've entered a WIN / LOSE scenario
+    this._updateState();
   };
 
   // open-up the board using four-way flood-fill algorithm
