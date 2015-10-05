@@ -95,17 +95,31 @@
   };
 
   Board.prototype.grid = function () {
+    var i, j, clone = [];
+
+    for (i = 0; i < this._numRows; i++) {
+      clone.push([]);
+      for (j = 0; j < this._numCols; j++) {
+        // push a copy of the grid cell
+        clone[i].push(this.cell(j, i));
+      }
+    }
+
     return this._grid;
   };
 
-  Board.prototype.cell = function (x, y) {
+  Board.prototype._cell = function (x, y) {
     if (x >= 0 && y >= 0 && y < this._numRows && x < this._numCols) {
       return this._grid[y][x];
     }
   };
 
+  Board.prototype.cell = function (x, y) {
+    return extend({}, this._cell(x, y));
+  };
+
   Board.prototype.cycleCellFlag = function (x, y) {
-    var cell = this.cell(x, y), updated = true;
+    var cell = this._cell(x, y), updated = true;
 
     if (!cell || cell.state === CellStateEnum.OPEN || 
          this._state === BoardStateEnum.WON || this._state === BoardStateEnum.LOST) {
@@ -132,7 +146,7 @@
   };
 
   Board.prototype.openCell = function (x, y) {
-    var cell = this.cell(x, y);
+    var cell = this._cell(x, y);
 
     if (cell && cell.state === CellStateEnum.CLOSED && cell.flag === CellFlagEnum.NONE) {
       cell.state = CellStateEnum.OPEN;
@@ -158,7 +172,7 @@
   // open-up the board using four-way flood-fill algorithm
   // https://en.wikipedia.org/wiki/Flood_fill
   Board.prototype._fourWayFloodFill = function (x, y) {
-    var cell = this.cell(x, y);
+    var cell = this._cell(x, y);
 
     if (cell && !cell.isMine && cell.state === CellStateEnum.CLOSED && cell.flag === CellFlagEnum.NONE) {
       cell.state = CellStateEnum.OPEN;
@@ -177,7 +191,7 @@
 
     for (y = 0; y < this._numRows; y++) {
       for (x = 0; x < this._numCols; x++) {
-        cell = this.cell(x,y);
+        cell = this._cell(x,y);
 
         if(cell.state === CellStateEnum.OPEN) {
           if (cell.isMine) {
@@ -353,16 +367,21 @@
     return multi;
   };
 
-  /**
-   *  Object.extend polyfill
-   */
-
-  if (!Object.extend) {
-    Object.extend = function (obj, props) {
-      for (var prop in props) { obj[prop] = props[prop]; }
-      return obj;
-    };
-  }
+  var extend = function ( defaults, options ) {
+    var extended = {};
+    var prop;
+    for (prop in defaults) {
+      if (Object.prototype.hasOwnProperty.call(defaults, prop)) {
+        extended[prop] = defaults[prop];
+      }
+    }
+    for (prop in options) {
+      if (Object.prototype.hasOwnProperty.call(options, prop)) {
+        extended[prop] = options[prop];
+      }
+    }
+    return extended;
+  };
 
   /**
    *  Create exportable object
