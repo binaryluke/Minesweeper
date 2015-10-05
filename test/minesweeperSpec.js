@@ -272,6 +272,7 @@ describe('Minesweeper', function() {
         board = BoardFactory.create();
         board.openCell(1,0);
         expect(board.state()).to.equal(BoardStateEnum.LOST);
+        board.openCell(0,0);
         expect(board.cell(0,0).state).to.equal(CellStateEnum.CLOSED);
       });
 
