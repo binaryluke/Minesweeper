@@ -22,7 +22,7 @@ Available as an npm package using
 
 or a bower package using
 
-    bower install minesweeper
+    bower install minesweeper-lib
 
 
 Alternatively, you can just download the file from the `dist` directory and manually include it in your project using
