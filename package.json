@@ -1,8 +1,8 @@
 {
   "name": "minesweeper",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Provides functionality that can be used to create a Minesweeper clone.",
-  "main": "dist/Minesweeper.js",
+  "main": "dist/minesweeper.js",
   "scripts": {
     "test": "mocha"
   },
