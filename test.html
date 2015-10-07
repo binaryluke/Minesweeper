@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+  <title>Minesweeper</title>
+</head>
+<body>
+  <script src="dist/minesweeper.js"></script>
+  <script>
+    var BoardStateEnum = minesweeper.BoardStateEnum;
+    var CellStateEnum = minesweeper.CellStateEnum;
+    var CellFlagEnum = minesweeper.CellFlagEnum;
+    var Board = minesweeper.Board;
+    var Cell = minesweeper.Cell;
+    var generateMineArray = minesweeper.generateMineArray;
+
+    var printBoard = function (board) {
+      var i,
+          isWonLost = false,
+          strColHead = '   ',
+          grid = board.grid();
+
+      if (board.state === BoardStateEnum.WON || board.state === BoardStateEnum.LOST) {
+        isWonLost = true;
+      }
+
+      for (i=0; i<board.numCols(); i++) {
+        strColHead += '   ' + i + '   ';
+      }
+
+      console.log(strColHead);
+
+      for (i=0; i<board.numRows(); i++) {
+        printRow(grid[i], isWonLost, i);
+      }
+
+      if (board.state() === BoardStateEnum.PRISTINE) {
+        console.log('Board state is: PRISTINE' );
+      } else if (board.state() === BoardStateEnum.IN_PROGRESS) {
+        console.log('Board state is: IN_PROGRESS');
+      } else if (board.state() === BoardStateEnum.WON) {
+        console.log('Board state is: WON');
+      } else if (board.state() === BoardStateEnum.LOST) {
+        console.log('Board state is: LOST');
+      } else {
+        console.log('Board state is: UNKNOWN');
+      }
+    };
+
+    var printRow = function (rowArray, isWonLost, rowNum) {
+      var i, cell, strRow = '';
+
+      strRow += rowNum !== undefined ? ' ' + rowNum + ' ' : '';
+
+      for (i=0; i<rowArray.length; i++) {
+        cell = rowArray[i];
+        if (cell.state === CellStateEnum.CLOSED) {
+          if (cell.flag === CellFlagEnum.NONE) {
+            strRow += getCellString(' ');
+          } else if (cell.flag === CellFlagEnum.EXCLAMATION) {
+            strRow += getCellString('!');
+          } else if (cell.flag === CellFlagEnum.QUESTION) {
+            strRow += getCellString('?');
+          }
+        } else if (cell.state === CellStateEnum.OPEN) {
+          if (cell.isMine) {
+            strRow += getCellString('*');
+          } else {
+            strRow += getCellString(cell.numAdjacentMines);
+          }
+        }
+      }
+
+      console.log(strRow);
+    };
+
+    var getCellString = function (content) {
+      return ' [ ' + content + ' ] ';
+    };
+
+    // open cell
+    var oc = function (x, y) {
+      var board = window.board;
+
+      if (!board) return;
+
+      if (x === undefined || y === undefined) {
+        printBoard(board);
+        return;
+      }
+
+      board.openCell(x, y);
+      printBoard(board);
+    };
+
+    // flag cell (cycles through NONE, EXCLAMATION, QUESTION)
+    var fc = function (x, y) {
+      var board = window.board;
+
+      if (!board) return;
+
+      if (x === undefined || y === undefined) {
+        printBoard(board);
+        return;
+      }
+
+      board.cycleCellFlag(x, y);
+      printBoard(board);
+    };
+  </script>
+</body>
+</html>
